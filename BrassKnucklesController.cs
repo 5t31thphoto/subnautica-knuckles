@@ -4,7 +4,7 @@ namespace SubnauticaKnuckles
 {
     public class BrassKnucklesController : MonoBehaviour
     {
-        private const float PunchDamage = 5001f;
+        private const float PunchDamage = 50f;
         private const float PunchRange = 4.0f;
         private const float Cooldown = 0.6f;
 
@@ -31,8 +31,8 @@ namespace SubnauticaKnuckles
             if (!isEquipped)
                 return;
 
-            // Left mouse / LeftHand button
-            if (GameInput.GetButtonDown(GameInput.Button.LeftHand) && Time.time >= lastPunchTime + Cooldown)
+            if (GameInput.GetButtonDown(GameInput.Button.LeftHand) &&
+                Time.time >= lastPunchTime + Cooldown)
             {
                 TriggerPunch();
                 lastPunchTime = Time.time;
@@ -41,7 +41,6 @@ namespace SubnauticaKnuckles
 
         private bool IsBrassKnucklesEquipped()
         {
-            // Works on current Nautilus / Subnautica
             return Inventory.main.equipment.GetTechTypeInSlot("Gloves") == Plugin.BrassKnucklesTechType;
         }
 
@@ -50,16 +49,11 @@ namespace SubnauticaKnuckles
             if (visualRoot != null)
                 return;
 
-            Transform hand = Player.main.GetHandsController()?.rightHandTarget;
-            if (hand == null)
-                return;
-
+            // Parent to player for now – no hand-bone API dependency
             visualRoot = new GameObject("BrassKnucklesVisual");
-            visualRoot.transform.SetParent(hand, false);
-            visualRoot.transform.localPosition = new Vector3(0.02f, 0.02f, 0.05f);
-            visualRoot.transform.localRotation = Quaternion.Euler(0, 0, 90);
+            visualRoot.transform.SetParent(Player.main.transform, false);
+            visualRoot.transform.localPosition = new Vector3(0.25f, -0.1f, 0.35f);
 
-            // Try AssetBundle first, fall back to cylinder
             GameObject model = AssetLoader.TryLoadKnucklesModel();
             if (model != null)
             {
@@ -67,17 +61,14 @@ namespace SubnauticaKnuckles
             }
             else
             {
-                // Placeholder cylinder
                 var cyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 Object.DestroyImmediate(cyl.GetComponent<Collider>());
                 cyl.transform.SetParent(visualRoot.transform, false);
-                cyl.transform.localScale = new Vector3(0.035f, 0.07f, 0.035f);
-                cyl.transform.localPosition = Vector3.zero;
-                cyl.transform.localRotation = Quaternion.identity;
+                cyl.transform.localScale = new Vector3(0.04f, 0.08f, 0.04f);
 
-                var renderer = cyl.GetComponent<Renderer>();
-                if (renderer != null)
-                    renderer.material = AssetLoader.CreatePlaceholderMaterial();
+                var r = cyl.GetComponent<Renderer>();
+                if (r != null)
+                    r.material = AssetLoader.CreatePlaceholderMaterial();
             }
         }
 
@@ -92,19 +83,16 @@ namespace SubnauticaKnuckles
 
         private void TriggerPunch()
         {
-            Transform cam = MainCamera.camera.transform;
+            if (MainCamera.camera == null)
+                return;
+
+            var cam = MainCamera.camera.transform;
             if (Physics.Raycast(cam.position, cam.forward, out RaycastHit hit, PunchRange))
             {
-                LiveMixin target = hit.collider.GetComponentInParent<LiveMixin>();
+                var target = hit.collider.GetComponentInParent<LiveMixin>();
                 if (target != null && target != Player.main.liveMixin)
                 {
                     target.TakeDamage(PunchDamage, hit.point, DamageType.Normal, Player.main.gameObject);
-
-                    // Feel
-                    MainCameraControl.main.PunchShake(4.5f, 0.4f);
-
-                    // Sound (Prawn Suit heavy hit is the closest vanilla punch sound)
-                    FMODUWE.PlayOneShot("event:/sub/exosuit/impact_solid_hard", hit.point);
                 }
             }
         }
