@@ -1,9 +1,9 @@
 using BepInEx;
 using Nautilus.Assets;
 using Nautilus.Assets.Gadgets;
+using Nautilus.Assets.PrefabTemplates;
 using Nautilus.Crafting;
 using Nautilus.Handlers;
-using Nautilus.Utility;
 using UnityEngine;
 using Ingredient = CraftData.Ingredient;
 
@@ -19,10 +19,9 @@ namespace SubnauticaKnuckles
         {
             Logger.LogInfo("Brass Knuckles loading...");
 
-            // Create the item
             PrefabInfo info = PrefabInfo
                 .WithTechType("BrassKnuckles", "Brass Knuckles", "Put sea monsters in their place.")
-                .WithIcon(SpriteManager.Get(TechType.ReinforcedGloves)); // placeholder icon
+                .WithIcon(SpriteManager.Get(TechType.ReinforcedGloves));
 
             CustomPrefab prefab = new CustomPrefab(info);
 
@@ -37,25 +36,18 @@ namespace SubnauticaKnuckles
             .WithFabricatorType(CraftTree.Type.Fabricator)
             .WithStepsToFabricatorMenu("Personal", "Equipment");
 
-            // Simple prefab (we don't need a complex world object for pure equipment)
+            // Simple world prefab (cloned from Reinforced Gloves)
             prefab.SetGameObject(new CloneTemplate(info, TechType.ReinforcedGloves));
 
             prefab.Register();
             BrassKnucklesTechType = info.TechType;
 
-            // Start the player-side controller once the player exists
+            // Persistent controller
             var go = new GameObject("BrassKnucklesController");
-            DontDestroyOnLoad(go);
+            Object.DontDestroyOnLoad(go);
             go.AddComponent<BrassKnucklesController>();
 
             Logger.LogInfo("Brass Knuckles registered.");
         }
-    }
-
-    public static class PluginInfo
-    {
-        public const string PLUGIN_GUID = "com.yourname.brassknuckles";
-        public const string PLUGIN_NAME = "Brass Knuckles";
-        public const string PLUGIN_VERSION = "1.0.0";
     }
 }
