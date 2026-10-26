@@ -3,6 +3,8 @@ name: Build Subnautica Mod
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
@@ -27,4 +29,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: SubnauticaKnuckles
-        path: bin/Release/net472/SubnauticaKnuckles.dll
+        path: |
+          bin/Release/net472/SubnauticaKnuckles.dll
+          bin/Release/net472/Assets/**
