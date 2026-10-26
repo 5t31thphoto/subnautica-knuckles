@@ -4,7 +4,7 @@ namespace SubnauticaKnuckles
 {
     public class BrassKnucklesController : MonoBehaviour
     {
-        private const float PunchDamage = 50f;
+        private const float PunchDamage = 5001f;
         private const float PunchRange = 4.0f;
         private const float Cooldown = 0.6f;
 
