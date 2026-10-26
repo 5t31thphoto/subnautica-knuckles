@@ -5,7 +5,6 @@ using Nautilus.Assets.PrefabTemplates;
 using Nautilus.Crafting;
 using Nautilus.Handlers;
 using UnityEngine;
-using Ingredient = CraftData.Ingredient;
 
 namespace SubnauticaKnuckles
 {
