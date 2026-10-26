@@ -3,7 +3,6 @@ using Nautilus.Assets;
 using Nautilus.Assets.Gadgets;
 using Nautilus.Assets.PrefabTemplates;
 using Nautilus.Crafting;
-using Nautilus.Handlers;
 using UnityEngine;
 
 namespace SubnauticaKnuckles
@@ -18,30 +17,28 @@ namespace SubnauticaKnuckles
         {
             Logger.LogInfo("Brass Knuckles loading...");
 
-            PrefabInfo info = PrefabInfo
+            var info = PrefabInfo
                 .WithTechType("BrassKnuckles", "Brass Knuckles", "Put sea monsters in their place.")
                 .WithIcon(SpriteManager.Get(TechType.ReinforcedGloves));
 
-            CustomPrefab prefab = new CustomPrefab(info);
+            var prefab = new CustomPrefab(info);
 
-            // Glove slot
             prefab.SetEquipment(EquipmentType.Gloves);
 
-            // Recipe
             prefab.SetRecipe(new RecipeData(
                 new Ingredient(TechType.Titanium, 2),
                 new Ingredient(TechType.Silver, 1)
             ))
             .WithFabricatorType(CraftTree.Type.Fabricator)
-            .WithStepsToFabricatorMenu("Personal", "Equipment");
+            .WithStepsToFabricatorTab("Personal", "Equipment");
 
-            // Simple world prefab (cloned from Reinforced Gloves)
+            // Simple world/inventory model – clone reinforced gloves
             prefab.SetGameObject(new CloneTemplate(info, TechType.ReinforcedGloves));
 
             prefab.Register();
             BrassKnucklesTechType = info.TechType;
 
-            // Persistent controller
+            // Persistent controller that watches the glove slot
             var go = new GameObject("BrassKnucklesController");
             Object.DontDestroyOnLoad(go);
             go.AddComponent<BrassKnucklesController>();
