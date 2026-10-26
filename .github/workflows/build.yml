@@ -3,12 +3,10 @@ name: Build Subnautica Mod
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build:
-    runs-on: windows-latest # Windows runner ensures compatibility with .NET Framework/MSBuild
+    runs-on: windows-latest
 
     steps:
     - name: Checkout Code
@@ -17,16 +15,16 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x' # Or whatever modern version of dotnet you target
+        dotnet-version: '8.0.x'
 
     - name: Restore Dependencies
       run: dotnet restore
 
-    - name: Build Mod DLL
+    - name: Build Mod
       run: dotnet build --configuration Release
 
-    - name: Upload Finished Mod Artifact
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: BrassKnucklesMod
-        path: bin/Release/**/SubnauticaKnuckles.dll
+        name: SubnauticaKnuckles
+        path: bin/Release/net472/SubnauticaKnuckles.dll
