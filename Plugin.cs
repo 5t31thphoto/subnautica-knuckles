@@ -2,35 +2,60 @@ using BepInEx;
 using Nautilus.Assets;
 using Nautilus.Assets.Gadgets;
 using Nautilus.Crafting;
+using Nautilus.Handlers;
+using Nautilus.Utility;
+using UnityEngine;
+using Ingredient = CraftData.Ingredient;
 
 namespace SubnauticaKnuckles
 {
-    [BepInPlugin("com.yourname.brassknuckles", "Brass Knuckles", "1.0.0")]
+    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     [BepInDependency("com.snmodding.nautilus")]
     public class Plugin : BaseUnityPlugin
     {
+        public static TechType BrassKnucklesTechType { get; private set; }
+
         private void Awake()
         {
-            // Define the item
-            var prefab = new CustomPrefab("BrassKnuckles", "Brass Knuckles", "Put sea monsters in their place.");
-            
-            // Assign it to the Glove equipment slot
-            prefab.SetEquipment(EquipmentType.Gloves);
-            
-            // Give it a recipe (1x Titanium)
-            prefab.SetRecipe(new RecipeData(new CraftData.Ingredient(TechType.Titanium, 1)))
-                  .WithFabricatorType(CraftTree.Type.Fabricator)
-                  .WithStepsToFabricator(new[] { "Personal", "Tools" });
+            Logger.LogInfo("Brass Knuckles loading...");
 
-            // Attach the punch script to the item when it spawns
-            prefab.SetGameObject(() => {
-                var obj = UnityEngine.Object.Instantiate(CraftData.GetPrefabForTechType(TechType.Knife));
-                UnityEngine.Object.DestroyImmediate(obj.GetComponent<PlayerKnife>()); // Strip knife behavior
-                obj.AddComponent<BrassKnucklesBehavior>(); // Add punch behavior
-                return obj;
-            });
+            // Create the item
+            PrefabInfo info = PrefabInfo
+                .WithTechType("BrassKnuckles", "Brass Knuckles", "Put sea monsters in their place.")
+                .WithIcon(SpriteManager.Get(TechType.ReinforcedGloves)); // placeholder icon
+
+            CustomPrefab prefab = new CustomPrefab(info);
+
+            // Glove slot
+            prefab.SetEquipment(EquipmentType.Gloves);
+
+            // Recipe
+            prefab.SetRecipe(new RecipeData(
+                new Ingredient(TechType.Titanium, 2),
+                new Ingredient(TechType.Silver, 1)
+            ))
+            .WithFabricatorType(CraftTree.Type.Fabricator)
+            .WithStepsToFabricatorMenu("Personal", "Equipment");
+
+            // Simple prefab (we don't need a complex world object for pure equipment)
+            prefab.SetGameObject(new CloneTemplate(info, TechType.ReinforcedGloves));
 
             prefab.Register();
+            BrassKnucklesTechType = info.TechType;
+
+            // Start the player-side controller once the player exists
+            var go = new GameObject("BrassKnucklesController");
+            DontDestroyOnLoad(go);
+            go.AddComponent<BrassKnucklesController>();
+
+            Logger.LogInfo("Brass Knuckles registered.");
         }
+    }
+
+    public static class PluginInfo
+    {
+        public const string PLUGIN_GUID = "com.yourname.brassknuckles";
+        public const string PLUGIN_NAME = "Brass Knuckles";
+        public const string PLUGIN_VERSION = "1.0.0";
     }
 }
